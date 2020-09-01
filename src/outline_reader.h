@@ -2,8 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <regex.h>
+#include <assert.h>
 
 // This is taken from the org-outline-regexp variable.
 // It describes any length string of asterisks with a final space.
@@ -12,6 +11,9 @@
 
 // The max line length in a valid input file.
 #define OUTLINE_MAX_LINE_LEN 100
+
+// The max length of a heading name.
+#define OUTLINE_MAX_NAME_LEN 40
 
 /* Global Variables */
 typedef struct {
@@ -30,8 +32,11 @@ void outline_free_file(outline_file * pFile);
 
 /* Info Functions */
 
-// Get the level of the most recently traversed heading. Initally 0.
-int outline_level(outline_file * pFile);
+// Get the level of the given heading line.
+int outline_get_level(char * line);
+
+// Get the name of the given heading line.
+int outline_get_name(char * line);
 
 /* Movement Functions */
 

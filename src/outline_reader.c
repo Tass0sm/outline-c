@@ -23,11 +23,41 @@ void outline_free_file(outline_file * pFile) {
 	free(pFile);
 }
 
-/* Metrics */
+/* Info Functions */
 
-// Get the level of the most recently traversed heading. Initally 0.
-int outline_level(outline_file * pFile) {
-	return pFile->currentLevel;
+// Get the level of the given heading line.
+int outline_get_level(char * line) {
+	int result = 0;
+
+	while (line[result] == '*') {
+		result++;
+	}
+
+	if (line[result] == ' ') {
+		result = 0;
+	}
+
+	return result;
+}
+
+// Remove the heading prefix and leave the name of the given heading line.
+// (Assumes the line is a heading)
+char * outline_remove_heading_prefix(char * line) {
+	int i = 0;
+
+	while (line[i] == '*') {
+		i++;
+	}
+
+	i++;
+
+	int j = 0;
+
+	while (line[i] != '\0') {
+		line[j++] = line[i++];
+	}
+
+	line[j] = '\0';
 }
 
 /* Heading Seeking */
@@ -45,6 +75,7 @@ int outline_seek_next_heading(outline_file * pFile) {
 		fgets(currentLine, OUTLINE_MAX_LINE_LEN, pFile->realFile);
 
 		if (outline_is_heading(currentLine)) {
+			outline_remove_heading_prefix(currentLine);
 			printf("%s", currentLine);
 			result = 0;
 			done = true;
@@ -68,6 +99,7 @@ int outline_seek_next_leveled_heading(outline_file * pFile, int level) {
 		fgets(currentLine, OUTLINE_MAX_LINE_LEN, pFile->realFile);
 
 		if (outline_is_leveled_heading(currentLine, level)) {
+			outline_remove_heading_prefix(currentLine);
 			printf("%s", currentLine);
 			result = 0;
 			done = true;
@@ -91,6 +123,7 @@ int outline_seek_next_named_heading(outline_file * pFile, char * name) {
 		fgets(currentLine, OUTLINE_MAX_LINE_LEN, pFile->realFile);
 
 		if (outline_is_named_heading(currentLine, name)) {
+			outline_remove_heading_prefix(currentLine);
 			printf("%s", currentLine);
 			result = 0;
 			done = true;
@@ -113,13 +146,14 @@ void outline_print_to_next_heading(outline_file * pFile) {
 	do {
 
 		fgets(currentLine, OUTLINE_MAX_LINE_LEN, pFile->realFile);
-		if (!outline_is_heading(currentLine)) {
+
+		if (!feof(pFile->realFile) && !outline_is_heading(currentLine)) {
 			printf("%s", currentLine);
 		} else {
 			done = true;
 		}
 
-	} while (!feof(pFile->realFile) && !done);
+	} while (!done);
 }
 
 // Print the file contents to the next heading with the given level.
@@ -132,13 +166,13 @@ void outline_print_to_next_leveled_heading(outline_file * pFile, int level) {
 	do {
 
 		fgets(currentLine, OUTLINE_MAX_LINE_LEN, pFile->realFile);
-		if (!outline_is_leveled_heading(currentLine, level)) {
+		if (!feof(pFile->realFile) && !outline_is_leveled_heading(currentLine, level)) {
 			printf("%s", currentLine);
 		} else {
 			done = true;
 		}
 
-	} while (!feof(pFile->realFile) && !done);
+	} while (!done);
 }
 
 // Print the file contents to the next heading with the given name.
@@ -151,13 +185,13 @@ void outline_print_to_next_named_heading(outline_file * pFile, char * name) {
 	do {
 
 		fgets(currentLine, OUTLINE_MAX_LINE_LEN, pFile->realFile);
-		if (!outline_is_named_heading(currentLine, name)) {
+		if (!feof(pFile->realFile) && !outline_is_named_heading(currentLine, name)) {
 			printf("%s", currentLine);
 		} else {
 			done = true;
 		}
 
-	} while (!feof(pFile->realFile) && !done);
+	} while (!done);
 }
 
 /* Heading Tests */
